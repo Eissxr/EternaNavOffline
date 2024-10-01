@@ -17,7 +17,6 @@
             height: 100vh;
             width: 100%;
         }
-        /* Blinking effect for the user marker */
         .blinking-marker {
             animation: blinking 5s infinite;
             position: relative;
@@ -27,7 +26,6 @@
             50% { opacity: 0; }
             100% { opacity: 1; }
         }
-        /* Arrow inside user marker */
         .arrow {
             position: absolute;
             width: 0;
@@ -39,7 +37,6 @@
             left: 50%;
             transform: translate(-50%, -50%) rotate(0deg);
         }
-        /* Transparent user marker */
         .user-marker {
             width: 36px;
             height: 36px;
@@ -49,7 +46,6 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 12px 0 7px rgba(0, 0, 0, 0.4);
             position: relative;
         }
-        /* Bubble button for directions */
         #directionBubble {
             position: fixed;
             bottom: 20px;
@@ -66,10 +62,6 @@
             cursor: pointer;
             z-index: 1000;
         }
-        #directionBubble:hover {
-            background-color: #0056b3;
-        }
-        /* Expandable popup for directions */
         #directionPopup {
             position: fixed;
             bottom: 100px;
@@ -86,11 +78,9 @@
             justify-content: space-between;
             align-items: center;
         }
-        /* Hide routing container */
         .leaflet-routing-container {
             display: none !important;
         }
-        /* Loading overlay styles */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -123,6 +113,37 @@
             background-color: #007bff;
             transition: width 0.3s;
         }
+        #searchContainer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #searchInput {
+            padding: 10px;
+            width: 250px;
+            border-radius: 20px;
+            border: 1px solid #007bff;
+            outline: none;
+            font-size: 16px;
+        }
+        #searchButton {
+            margin-left: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #searchButton:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -145,6 +166,11 @@
         <div class="progress" id="loadingProgress"></div>
     </div>
     <div class="loading-text">Loading...</div>
+</div>
+
+<div id="searchContainer">
+    <input type="text" id="searchInput" placeholder="Search for a gravesite..." />
+    <button id="searchButton">Search</button>
 </div>
 
 <script src="leaflet.js"></script> <!-- Local Leaflet JS -->
@@ -226,24 +252,18 @@
         document.getElementById('directionPopup').style.display = 'none';
     });
 
-    var gravesiteId = new URLSearchParams(window.location.search).get('id');
-
-    if (gravesiteId) {
+    document.getElementById('searchButton').addEventListener('click', function() {
+        var searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
         var gravesite = gravesites.find(function(site) {
-            return site.id == gravesiteId;
+            return site.name.toLowerCase() === searchTerm;
         });
+
         if (gravesite) {
             L.marker([gravesite.lat, gravesite.lng], { icon: gravestoneIcon }).addTo(map)
                 .bindPopup(gravesite.name).openPopup();
             guideToGravesite(gravesite.lat, gravesite.lng);
-        }
-    }
-
-    window.addEventListener('deviceorientation', function(event) {
-        var arrow = document.querySelector('.arrow');
-        if (arrow) {
-            var alpha = event.alpha;
-            arrow.style.transform = 'translate(-50%, -50%) rotate(' + alpha + 'deg)';
+        } else {
+            alert('Gravesite not found');
         }
     });
 </script>
