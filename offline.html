@@ -144,9 +144,22 @@
         #searchButton:hover {
             background-color: #0056b3;
         }
+        #offlineHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ffcc00;
+            padding: 10px;
+            text-align: center;
+            z-index: 1000;
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
+
+<div id="offlineHeader">You're offline. Retry to connect.</div>
 
 <div id="map"></div>
 
@@ -274,6 +287,20 @@
             alert('Gravesite not found');
         }
     });
+
+    // Check online/offline status
+    function updateOnlineStatus() {
+        var offlineHeader = document.getElementById('offlineHeader');
+        if (navigator.onLine) {
+            offlineHeader.style.display = 'none';
+        } else {
+            offlineHeader.style.display = 'block';
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus(); // Run it initially to set correct status
 </script>
 
 </body>
