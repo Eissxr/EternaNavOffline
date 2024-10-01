@@ -217,6 +217,8 @@
         layers: [osm]
     });
 
+    var userMarker = null; // Store user marker reference
+
     var gravesites = [
         { id: 1, name: "Kyle Darren", lat: 15.10727328, lng: 120.62461202 },
         { id: 2, name: "Denice", lat: 15.10731987, lng: 120.62454790 },
@@ -228,6 +230,14 @@
             navigator.geolocation.getCurrentPosition(function(position) {
                 var userLat = position.coords.latitude;
                 var userLng = position.coords.longitude;
+
+                // Check if user marker already exists
+                if (!userMarker) {
+                    userMarker = L.marker([userLat, userLng], { icon: blinkingIcon }).addTo(map).bindPopup('You are here');
+                } else {
+                    // Update user marker position
+                    userMarker.setLatLng([userLat, userLng]);
+                }
 
                 var control = L.Routing.control({
                     waypoints: [
@@ -255,9 +265,6 @@
                     var progress = document.getElementById('loadingProgress');
                     progress.style.width = '100%';
                 });
-
-                // Add blinking marker for user location outside of the Routing control
-                L.marker([userLat, userLng], { icon: blinkingIcon }).addTo(map).bindPopup('You are here');
             }, function() {
                 alert("Unable to access your location. Using fallback location.");
             });
@@ -267,8 +274,7 @@
     }
 
     document.getElementById('directionBubble').addEventListener('click', function() {
-        var directionPopup = document.getElementById('directionPopup');
-        directionPopup.style.display = directionPopup.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('directionPopup').style.display = 'block';
     });
 
     document.getElementById('closePopup').addEventListener('click', function() {
