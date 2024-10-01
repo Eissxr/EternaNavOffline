@@ -115,13 +115,14 @@
         }
         #searchContainer {
             position: absolute;
-            top: 10px;
+            top: 10px; /* Initial position */
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: top 0.3s; /* Smooth transition */
         }
         #searchInput {
             padding: 10px;
@@ -266,48 +267,38 @@
                     progress.style.width = '100%';
                 });
             }, function() {
-                alert("Unable to access your location. Using fallback location.");
+                alert('Unable to retrieve your location.');
             });
         } else {
-            alert("Geolocation is not supported by this browser.");
+            alert('Geolocation is not supported by this browser.');
         }
     }
 
-    document.getElementById('directionBubble').addEventListener('click', function() {
-        document.getElementById('directionPopup').style.display = 'block';
-    });
-
-    document.getElementById('closePopup').addEventListener('click', function() {
-        document.getElementById('directionPopup').style.display = 'none';
-    });
-
     document.getElementById('searchButton').addEventListener('click', function() {
-        var searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
-        var foundGravesite = gravesites.find(function(gravesite) {
-            return gravesite.name.toLowerCase() === searchInput;
-        });
-
-        if (foundGravesite) {
-            guideToGravesite(foundGravesite.lat, foundGravesite.lng);
+        var input = document.getElementById('searchInput').value.toLowerCase();
+        var gravesite = gravesites.find(g => g.name.toLowerCase() === input);
+        if (gravesite) {
+            guideToGravesite(gravesite.lat, gravesite.lng);
         } else {
-            alert('Gravesite not found');
+            alert('Gravesite not found.');
         }
     });
 
-    // Check online/offline status
     function updateOnlineStatus() {
-        var offlineHeader = document.getElementById('offlineHeader');
         if (navigator.onLine) {
-            offlineHeader.style.display = 'none';
+            document.getElementById('offlineHeader').style.display = 'none';
+            document.getElementById('searchContainer').style.top = '10px'; // Reset position
         } else {
-            offlineHeader.style.display = 'block';
+            document.getElementById('offlineHeader').style.display = 'block';
+            document.getElementById('searchContainer').style.top = '50px'; // Move down
         }
     }
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus(); // Run it initially to set correct status
-</script>
 
+    // Initial check
+    updateOnlineStatus();
+</script>
 </body>
 </html>
