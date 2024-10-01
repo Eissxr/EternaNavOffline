@@ -227,8 +227,9 @@
                     fitSelectedRoutes: true,
                     showAlternatives: false,
                     createMarker: function(i, waypoint, n) {
-                        var markerIcon = (i === 0) ? blinkingIcon : gravestoneIcon;
-                        return L.marker(waypoint.latLng, { icon: markerIcon }).bindPopup((i === 0) ? 'You are here' : 'Gravesite');
+                        if (i === 1) {
+                            return L.marker(waypoint.latLng, { icon: gravestoneIcon }).bindPopup('Gravesite');
+                        }
                     },
                     lineOptions: {
                         styles: [{ color: '#007bff', weight: 6 }]
@@ -241,6 +242,9 @@
                     var progress = document.getElementById('loadingProgress');
                     progress.style.width = '100%';
                 });
+
+                // Add blinking marker for user location outside of the Routing control
+                L.marker([userLat, userLng], { icon: blinkingIcon }).addTo(map).bindPopup('You are here');
             }, function() {
                 alert("Unable to access your location. Using fallback location.");
             });
