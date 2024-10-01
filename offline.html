@@ -12,9 +12,10 @@
             padding: 0;
             height: 100%;
             font-family: Arial, sans-serif;
+            touch-action: manipulation; /* Prevents default touch actions like scrolling */
         }
         #map {
-            height: 100vh;
+            height: 100vh; /* Full height for the map */
             width: 100%;
         }
         .blinking-marker {
@@ -66,7 +67,8 @@
             position: fixed;
             bottom: 100px;
             right: 20px;
-            width: 300px;
+            width: 90%; /* Full width on mobile */
+            max-width: 300px;
             background-color: white;
             border-radius: 10px;
             padding: 15px;
@@ -122,11 +124,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: top 0.3s; /* Smooth transition */
+            flex-wrap: wrap; /* Allow wrapping for small screens */
+            padding: 0 10px; /* Padding for mobile */
         }
         #searchInput {
             padding: 10px;
-            width: 250px;
+            flex: 1; /* Allow the input to grow */
+            min-width: 150px; /* Minimum width */
+            max-width: 250px; /* Maximum width */
             border-radius: 20px;
             border: 1px solid #007bff;
             outline: none;
@@ -134,13 +139,14 @@
         }
         #searchButton {
             margin-left: 10px;
-            padding: 10px;
+            padding: 10px 15px; /* Increased padding for touch targets */
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 20px;
             cursor: pointer;
             font-size: 16px;
+            min-width: 80px; /* Minimum width for button */
         }
         #searchButton:hover {
             background-color: #0056b3;
@@ -259,46 +265,53 @@
                         styles: [{ color: '#007bff', weight: 6 }]
                     }
                 }).addTo(map);
-
-                control.on('routesfound', function(e) {
-                    var routes = e.routes;
-                    var steps = routes[0].instructions;
-                    var progress = document.getElementById('loadingProgress');
-                    progress.style.width = '100%';
-                });
-            }, function() {
-                alert('Unable to retrieve your location.');
             });
         } else {
-            alert('Geolocation is not supported by this browser.');
+            alert("Geolocation is not supported by this browser.");
         }
     }
 
+    gravesites.forEach(function(gravesite) {
+        var marker = L.marker([gravesite.lat, gravesite.lng], { icon: gravestoneIcon }).addTo(map);
+        marker.bindPopup(gravesite.name);
+        marker.on('click', function() {
+            guideToGravesite(gravesite.lat, gravesite.lng);
+        });
+    });
+
+    // Search functionality
     document.getElementById('searchButton').addEventListener('click', function() {
         var input = document.getElementById('searchInput').value.toLowerCase();
-        var gravesite = gravesites.find(g => g.name.toLowerCase() === input);
-        if (gravesite) {
-            guideToGravesite(gravesite.lat, gravesite.lng);
+        var found = gravesites.find(g => g.name.toLowerCase().includes(input));
+        if (found) {
+            guideToGravesite(found.lat, found.lng);
         } else {
-            alert('Gravesite not found.');
+            alert("Gravesite not found.");
         }
     });
 
-    function updateOnlineStatus() {
-        if (navigator.onLine) {
-            document.getElementById('offlineHeader').style.display = 'none';
-            document.getElementById('searchContainer').style.top = '10px'; // Reset position
-        } else {
-            document.getElementById('offlineHeader').style.display = 'block';
-            document.getElementById('searchContainer').style.top = '50px'; // Move down
-        }
+    // Offline detection
+    window.addEventListener('offline', function() {
+        document.getElementById('offlineHeader').style.display = 'block';
+    });
+    window.addEventListener('online', function() {
+        document.getElementById('offlineHeader').style.display = 'none';
+    });
+
+    // Close popup
+    document.getElementById('closePopup').addEventListener('click', function() {
+        document.getElementById('directionPopup').style.display = 'none';
+    });
+
+    // Show loading overlay
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('visible');
     }
 
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    // Initial check
-    updateOnlineStatus();
+    // Hide loading overlay
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('visible');
+    }
 </script>
 </body>
 </html>
