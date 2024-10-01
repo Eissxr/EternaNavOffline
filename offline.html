@@ -199,7 +199,7 @@
     });
 
     var map = L.map('map', {
-        center: [15.107161, 120.624238],
+        center: [15.107161, 120.624238], // Fallback location
         zoom: 19,
         layers: [osm]
     });
@@ -211,36 +211,42 @@
     ];
 
     function guideToGravesite(lat, lng) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            var userLat = position.coords.latitude;
-            var userLng = position.coords.longitude;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
 
-            var control = L.Routing.control({
-                waypoints: [
-                    L.latLng(userLat, userLng),
-                    L.latLng(lat, lng)
-                ],
-                routeWhileDragging: true,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                fitSelectedRoutes: true,
-                showAlternatives: false,
-                createMarker: function(i, waypoint, n) {
-                    var markerIcon = (i === 0) ? blinkingIcon : gravestoneIcon;
-                    return L.marker(waypoint.latLng, { icon: markerIcon }).bindPopup((i === 0) ? 'You are here' : 'Gravesite');
-                },
-                lineOptions: {
-                    styles: [{ color: '#007bff', weight: 6 }]
-                }
-            }).addTo(map);
+                var control = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLat, userLng),
+                        L.latLng(lat, lng)
+                    ],
+                    routeWhileDragging: true,
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    showAlternatives: false,
+                    createMarker: function(i, waypoint, n) {
+                        var markerIcon = (i === 0) ? blinkingIcon : gravestoneIcon;
+                        return L.marker(waypoint.latLng, { icon: markerIcon }).bindPopup((i === 0) ? 'You are here' : 'Gravesite');
+                    },
+                    lineOptions: {
+                        styles: [{ color: '#007bff', weight: 6 }]
+                    }
+                }).addTo(map);
 
-            control.on('routesfound', function(e) {
-                var routes = e.routes;
-                var steps = routes[0].instructions;
-                var progress = document.getElementById('loadingProgress');
-                progress.style.width = '100%';
+                control.on('routesfound', function(e) {
+                    var routes = e.routes;
+                    var steps = routes[0].instructions;
+                    var progress = document.getElementById('loadingProgress');
+                    progress.style.width = '100%';
+                });
+            }, function() {
+                alert("Unable to access your location. Using fallback location.");
             });
-        });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
     }
 
     document.getElementById('directionBubble').addEventListener('click', function() {
@@ -253,15 +259,13 @@
     });
 
     document.getElementById('searchButton').addEventListener('click', function() {
-        var searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-        var gravesite = gravesites.find(function(site) {
-            return site.name.toLowerCase() === searchTerm;
+        var searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        var foundGravesite = gravesites.find(function(gravesite) {
+            return gravesite.name.toLowerCase() === searchInput;
         });
 
-        if (gravesite) {
-            L.marker([gravesite.lat, gravesite.lng], { icon: gravestoneIcon }).addTo(map)
-                .bindPopup(gravesite.name).openPopup();
-            guideToGravesite(gravesite.lat, gravesite.lng);
+        if (foundGravesite) {
+            guideToGravesite(foundGravesite.lat, foundGravesite.lng);
         } else {
             alert('Gravesite not found');
         }
